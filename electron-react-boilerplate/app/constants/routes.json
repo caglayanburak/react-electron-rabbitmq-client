@@ -3,5 +3,7 @@
     "Queues": "/queues",
     "Error": "/error",
     "Business": "/business",
-    "Footer": "/footer"
+    "Footer": "/footer",
+    "TableItem": "/tableitem",
+    "TableFooter": "/tablefooter"
 }

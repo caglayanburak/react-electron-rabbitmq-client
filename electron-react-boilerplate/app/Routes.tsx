@@ -7,6 +7,8 @@ import Queues from './components/Queues';
 import ErrorQueues from './components/ErrorQueues';
 import Home from './components/Home';
 import Footer from './components/Footer';
+import TableItem from './components/TableItem';
+import TableHeader from './components/TableHeader';
 
 export default function Routes() {
   return (
@@ -26,6 +28,12 @@ export default function Routes() {
         </Route>
         <Route path={routes.Footer}>
           <Footer />
+        </Route>
+        <Route path={routes.TableItem}>
+          <TableItem />
+        </Route>
+        <Route path={routes.TableHeader}>
+          <TableHeader />
         </Route>
       </Switch>
     </App>

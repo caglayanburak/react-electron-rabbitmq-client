@@ -1,19 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import { Link } from 'react-router-dom';
 import styles from './ErrorQueues.css';
-import Icon from '@material-ui/core/Icon';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
-import MuiAlert from '@material-ui/lab/Alert';
 import CloseIcon from '@material-ui/icons/Close';
-import { withStyles, makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -21,8 +15,10 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import routes from '../constants/routes.json';
 import enviroments from '../constants/enviroments.json';
-import { Button, Snackbar, IconButton, Badge } from '@material-ui/core';
+import { Button, Snackbar, IconButton, Badge, Link, TableContainer } from '@material-ui/core';
 import Footer from './Footer';
+import TableItem from './TableItem';
+import TableHeader from './TableHeader';
 
 function Alert(props: JSX.IntrinsicAttributes) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -50,22 +46,6 @@ export default function ErrorQueues() {
     }
   }));
   const classes = useStyles();
-
-  const StyledTableCell = withStyles(theme => ({
-    root: {
-      color: 'white',
-      backgroundColor: 'transparent'
-    },
-    head: {
-      backgroundColor: 'transparent',
-      color: 'white',
-      fontWeight: 'bold'
-    },
-    body: {
-      fontSize: 12,
-    },
-  }))(TableCell);
-
   const [open, setOpen] = React.useState(false);
   const [message, setMessage] = React.useState('');
 
@@ -77,17 +57,6 @@ export default function ErrorQueues() {
   const closeSnackbar = () => {
     setOpen(false);
   };
-
-
-  const StyledTableRow = withStyles(theme => ({
-    root: {
-      backgroundColor: 'transparent',
-      '&:nth-of-type(odd)': {
-        backgroundColor: 'transparent',
-        color: 'white'
-      },
-    },
-  }))(TableRow);
 
   const [data, setData] = useState({});
   const [purgeData, purgeSetData] = useState({});
@@ -135,7 +104,6 @@ export default function ErrorQueues() {
     })
   }
 
-
   const dialogOpen = (value: string) => {
     setpurgeDialogOpen({ value: value, state: true });
   };
@@ -147,24 +115,7 @@ export default function ErrorQueues() {
   function Item(data: any) {
     if (parseInt(data.queue.messages) > 0) {
 
-      return (<StyledTableRow key={data.queue.name}>
-        <StyledTableCell component="th" scope="row">
-          {data.queue.name}
-        </StyledTableCell>
-        <StyledTableCell align="right">
-          {data.queue.messages}
-        </StyledTableCell>
-        <StyledTableCell align="right">
-          <Button variant="outlined" className={classes.requeueButton} color="primary" onClick={() => requeue(data.queue.name)}>
-            <Icon className="fa fa-recycle" />
-          </Button>
-        </StyledTableCell>
-        <StyledTableCell align="right">
-          <Button variant="outlined" color="secondary" onClick={() => dialogOpen(data.queue.name)}>
-            <Icon className="fa fa-trash" />
-          </Button>
-        </StyledTableCell>
-      </StyledTableRow>);
+      return (<TableItem queue={data.queue} dialogOpen={dialogOpen} requeue={requeue} />);
     }
     return null;
   }
@@ -189,21 +140,11 @@ export default function ErrorQueues() {
             <TableContainer component={Paper} className={classes.container}>
               <Table>
                 <TableHead>
-                  <StyledTableRow>
-                    <StyledTableCell>Queue Name</StyledTableCell>
-                    <StyledTableCell align="right">
-                      <Badge badgeContent={data.apiResponse?.length} color="error">
-                        Error Messages</Badge></StyledTableCell>
-                    <StyledTableCell align="right">Requeue</StyledTableCell>
-                    <StyledTableCell align="right">Purge</StyledTableCell>
-                  </StyledTableRow>
+                  <TableHeader response={data.apiResponse} />
                 </TableHead>
                 <TableBody>
-
                   {data.apiResponse && data.apiResponse.map(queue => (
-
                     <Item queue={queue} />
-
                   ))}
                 </TableBody>
               </Table>
@@ -256,9 +197,6 @@ export default function ErrorQueues() {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* <Fab color="primary" aria-label="add">
-        <AddIcon />
-      </Fab> */}
     </Container>
   );
 }
