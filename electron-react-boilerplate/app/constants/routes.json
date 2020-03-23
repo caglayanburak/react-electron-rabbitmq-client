@@ -1,6 +1,7 @@
 {
-  "HOME": "/",
-  "Queues": "/queues",
-  "Error": "/error",
-  "Business": "/business"
+    "HOME": "/",
+    "Queues": "/queues",
+    "Error": "/error",
+    "Business": "/business",
+    "Footer": "/footer"
 }
