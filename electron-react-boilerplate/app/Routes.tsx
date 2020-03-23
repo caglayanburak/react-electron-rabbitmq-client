@@ -6,6 +6,7 @@ import BusinessQueues from './components/BusinessQueues';
 import Queues from './components/Queues';
 import ErrorQueues from './components/ErrorQueues';
 import Home from './components/Home';
+import Footer from './components/Footer';
 
 export default function Routes() {
   return (
@@ -13,16 +14,19 @@ export default function Routes() {
       <Switch>
         <Route path={routes.Queues}>
           <Queues />
-          </Route>
+        </Route>
         <Route exact path={routes.HOME}>
           <Home />
-          </Route>
+        </Route>
         <Route path={routes.Error}>
           <ErrorQueues />
         </Route>
         <Route path={routes.Business}>
           <BusinessQueues />
-          </Route>
+        </Route>
+        <Route path={routes.Footer}>
+          <Footer />
+        </Route>
       </Switch>
     </App>
   );

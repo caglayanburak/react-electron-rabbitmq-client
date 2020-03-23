@@ -1,5 +1,5 @@
 {
   "hooks": {
-    "pre-commit": "echo 'commit event detected'"
+    "commit-msg": "echo \"commit-msg hook from Husky\" && echo $HUSKY_GIT_PARAMS > hook-params"
   }
 }

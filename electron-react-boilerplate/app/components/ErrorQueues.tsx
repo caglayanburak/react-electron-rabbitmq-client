@@ -9,7 +9,6 @@ import Paper from '@material-ui/core/Paper';
 import { Link } from 'react-router-dom';
 import styles from './ErrorQueues.css';
 import Icon from '@material-ui/core/Icon';
-import AddIcon from '@material-ui/icons/Add';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -22,7 +21,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import routes from '../constants/routes.json';
 import enviroments from '../constants/enviroments.json';
-import { Button, Snackbar, IconButton, Badge, Fab, FormControl, MenuItem, Select, InputLabel } from '@material-ui/core';
+import { Button, Snackbar, IconButton, Badge } from '@material-ui/core';
+import Footer from './Footer';
 
 function Alert(props: JSX.IntrinsicAttributes) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -231,29 +231,7 @@ export default function ErrorQueues() {
             </Snackbar>
           </Grid>
           <Grid item md={6} xs={6} sm={3}>
-            <FormControl variant="filled" className={classes.formControl}>
-              <InputLabel id="demo-simple-select-filled-label">Enviroment</InputLabel>
-              <Select
-                labelId="demo-simple-select-filled-label"
-                id="demo-simple-select-filled"
-              >
-                <MenuItem value={10}>Dev</MenuItem>
-                <MenuItem value={20}>Stage</MenuItem>
-                <MenuItem value={30}>Prod</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl variant="filled" className={classes.formControl}>
-              <InputLabel id="demo-simple-select-filled-label">Refresh</InputLabel>
-              <Select
-                labelId="demo-simple-select-filled-label"
-                id="demo-simple-select-filled"
-              >
-                <MenuItem value={10}>5 seconds</MenuItem>
-                <MenuItem value={20}>30 seconds</MenuItem>
-                <MenuItem value={30}>5 minutes</MenuItem>
-                <MenuItem value={30}>none</MenuItem>
-              </Select>
-            </FormControl>
+            <Footer />
           </Grid>
         </Grid>
       </div>
