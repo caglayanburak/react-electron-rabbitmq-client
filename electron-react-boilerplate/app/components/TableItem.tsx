@@ -4,8 +4,8 @@ import { Button, TableRow, withStyles, TableCell, Icon, makeStyles } from '@mate
 export default function TableItem(props) {
     const useStyles = makeStyles(theme => ({
         requeueButton: {
-          color: 'white',
-          border: '1px solid white'
+          color: 'yellow',
+          border: '1px solid yellow'
         }
       }));
       const classes = useStyles();
