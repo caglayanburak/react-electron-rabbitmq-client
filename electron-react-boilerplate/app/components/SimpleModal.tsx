@@ -55,7 +55,6 @@ export default function SimpleModal() {
   
     const save = () => {
         let regexList = window.localStorage.getItem('regexList');
-        alert(regexList);
         let regexList1 = new Array<any>();
         if (regexList) {
             regexList1 = JSON.parse(window.localStorage.getItem('regexList'));

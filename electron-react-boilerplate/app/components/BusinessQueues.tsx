@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './BusinessQueues.css';
 import PropTypes from 'prop-types';
-import { Container, Grid, Paper, TableContainer, Table, TableHead, makeStyles, TableBody, Typography, Box, AppBar, Tabs, Tab, withStyles, TextField, ListItem, ListItemIcon, ListItemText, List, Divider, Card, CardContent, CardActions, Button, Select, MenuItem, InputLabel, FormControl } from '@material-ui/core';
+import { Container, Grid, Paper, TableContainer, Table, TableHead, makeStyles, TableBody, Typography, Box, AppBar, Tabs, Tab, withStyles, TextField, ListItem, ListItemIcon, ListItemText, List, Divider, Card, CardContent, CardActions, Button, Select, MenuItem, InputLabel, FormControl, IconButton } from '@material-ui/core';
 import TableHeader from './TableHeader';
 import TableItem from './TableItem';
+import DeleteIcon from '@material-ui/icons/Delete';
 import routes from '../constants/routes.json';
 import enviroments from '../constants/enviroments.json';
 import SimpleModal from './SimpleModal';
@@ -68,8 +69,8 @@ export default function BusinessQueues() {
     regexSelect: {
       color: 'white'
     },
-    regexLabel:{
-     color: 'rgba(71, 171, 48, 1)'
+    regexLabel: {
+      color: 'rgba(71, 171, 48, 1)'
     },
     root: {
       '& .MuiTextField-root': {
@@ -80,21 +81,22 @@ export default function BusinessQueues() {
   }));
   const classes = useStyles();
   const [data, setData] = useState({});
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = useState(0);
+  const [regexValue, setRegexValue] = useState("");
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  async function fetchData() {
-    const res = await fetch(enviroments.apiUrl + "rabbitmq/regexQueues/^(xeon.b2b).*(error)$");
+  async function fetchData(regex) {
+    const res = await fetch(enviroments.apiUrl + "rabbitmq/regexQueues/" + regex);
     let data = await res.json();
     data.items = data.items.sort((a: { messages: number; }, b: { messages: number; }) => (a.messages > b.messages) ? -1 : 1);
     setData(data)
   }
 
   useEffect(() => {
-    fetchData()
+    fetchData(regexValue)
   }, [])
 
   function Item(data: any) {
@@ -150,9 +152,24 @@ export default function BusinessQueues() {
   }, [])
 
   const fetchRegexlist = () => {
-    setRegexList(JSON.parse(window.localStorage.getItem('regexList')));
+    let regList = window.localStorage.getItem('regexList');
+    if (regList) {
+      setRegexList(JSON.parse(regList));
+    }
   }
 
+  const setRegex = (event) => {
+    fetchData(event.target.value);
+  }
+
+  const deleteRegex = (name) => {
+    let t = JSON.parse(window.localStorage.getItem('regexList'));
+    var s = t.find(item => item.regexName == name);
+    t.splice(t.indexOf(s));
+
+    window.localStorage.setItem('regexList', JSON.stringify(t));
+    setRegexList(t);
+  }
 
   return (
     <Container fixed>
@@ -179,9 +196,11 @@ export default function BusinessQueues() {
                 <InputLabel id="demo-simple-select-filled-label" className={classes.regexLabel}>My Regex</InputLabel>
                 <Select
                   labelId="demo-simple-select-filled-label"
-                  id="demo-simple-select-filled" className={classes.regexSelect}>
+                  id="demo-simple-select-filled"
+                  onChange={setRegex}
+                  className={classes.regexSelect}>
                   {regexList.map((regex, index) => (
-                    <MenuItem value={regex.regex}>{regex.regex}</MenuItem>
+                    <MenuItem value={regex.regex}>{regex.regexName}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
@@ -207,7 +226,9 @@ export default function BusinessQueues() {
                     <List component="nav" aria-label="main mailbox folders">
                       {regexList.map((regex, index) => (
                         <ListItem button>
-                          > {regex.regex}
+                          > {regex.regexName} <IconButton aria-label="delete" onClick={() => deleteRegex(regex.regexName)} >
+                            <DeleteIcon fontSize="medium" color="secondary" />
+                          </IconButton>
                         </ListItem>
                       ))}
                     </List>
