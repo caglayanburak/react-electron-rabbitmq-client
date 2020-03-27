@@ -1,47 +1,44 @@
 .backButton {
-  position: absolute;
+    position: absolute;
 }
 
-.header
-{
-  margin-top: 45px;
-  color: #f44336;
+.header {
+    margin-top: 45px;
+    color: rgb(255, 14, 6);
 }
 
 .counter {
-  position: absolute;
-  top: 30%;
-  left: 45%;
-  font-size: 10rem;
-  font-weight: bold;
-  letter-spacing: -0.025em;
+    position: absolute;
+    top: 30%;
+    left: 45%;
+    font-size: 10rem;
+    font-weight: bold;
+    letter-spacing: -0.025em;
 }
 
-
-
 .table {
-  position: relative;
-  top: 20px;
-  width: 100%;
-  left:50px;
-  margin: 10 auto;
-  background-color: inherit !important;
+    position: relative;
+    top: 20px;
+    width: 100%;
+    left: 50px;
+    margin: 10 auto;
+    background-color: inherit !important;
 }
 
 .btn {
-  font-size: 1.6rem;
-  font-weight: bold;
-  background-color: #fff;
-  border-radius: 50%;
-  margin: 10px;
-  width: 100px;
-  height: 100px;
-  opacity: 0.7;
-  cursor: pointer;
-  font-family: Arial, Helvetica, Helvetica Neue, sans-serif;
+    font-size: 1.6rem;
+    font-weight: bold;
+    background-color: #fff;
+    border-radius: 50%;
+    margin: 10px;
+    width: 100px;
+    height: 100px;
+    opacity: 0.7;
+    cursor: pointer;
+    font-family: Arial, Helvetica, Helvetica Neue, sans-serif;
 }
 
 .btn:hover {
-  color: white;
-  background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    background-color: rgba(0, 0, 0, 0.5);
 }
