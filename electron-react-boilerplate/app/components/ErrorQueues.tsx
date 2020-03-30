@@ -84,7 +84,15 @@ export default function ErrorQueues() {
   }
 
   useEffect(() => {
-    fetchData()
+    fetchData();
+
+    let refreshInterval = window.localStorage.getItem('refreshInterval');
+    if (refreshInterval && parseInt(refreshInterval) > 0) {
+      const interval = setInterval(() => {
+        fetchData();
+      }, refreshInterval);
+      return () => clearInterval(interval);
+    }
   }, [])
 
   function requeue(queueName: string) {
@@ -127,7 +135,7 @@ export default function ErrorQueues() {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <div className={styles.backButton} data-tid="backButton">
-              <Link to={routes.Queues}>
+              <Link to={routes.HOME}>
                 <i className="fa fa-arrow-left fa-3x" />
               </Link>
             </div>

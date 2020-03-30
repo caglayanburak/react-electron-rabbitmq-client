@@ -1,8 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './BusinessQueues.css';
 import PropTypes from 'prop-types';
-import { Container, Grid, Paper, TableContainer, Table, TableHead, makeStyles, TableBody, Typography, Box, AppBar, Tabs, Tab, withStyles, TextField, ListItem, ListItemIcon, ListItemText, List, Divider, Card, CardContent, CardActions, Button, Select, MenuItem, InputLabel, FormControl, IconButton } from '@material-ui/core';
+import {
+  Container,
+  Grid,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  makeStyles,
+  TableBody,
+  Typography,
+  Box,
+  Tabs,
+  Tab,
+  withStyles,
+  ListItem,
+  List,
+  Card,
+  CardContent,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  IconButton
+} from '@material-ui/core';
 import TableHeader from './TableHeader';
 import TableItem from './TableItem';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -30,21 +53,21 @@ function TabPanel(props) {
 TabPanel.propTypes = {
   children: PropTypes.node,
   index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired
 };
 
 function a11yProps(index) {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`
   };
 }
 
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
-  },
+    backgroundColor: theme.palette.background.paper
+  }
 }));
 
 export default function BusinessQueues() {
@@ -60,56 +83,83 @@ export default function BusinessQueues() {
       color: 'white'
     },
     selectEmpty: {
-      marginTop: theme.spacing(2),
+      marginTop: theme.spacing(2)
     },
     requeueButton: {
       color: 'yellow',
       border: '1px solid yellow'
     },
     regexSelect: {
-      color: 'white'
+      color: 'white',
+      border: '1px solid #cecece',
+      '& .MuiSelect-icon': {
+        color: 'yellow',
+        height: 20
+      }
     },
     regexLabel: {
-      color: 'rgba(71, 171, 48, 1)'
+      color: '#3288f7'
     },
     root: {
-      '& .MuiTextField-root': {
-        margin: theme.spacing(1),
-        width: '25ch',
-      },
+      backgroundColor: 'transparent',
+      color: '#86878c'
+    },
+    muicardcontent: {
+      backgroundColor: 'transparent'
+    },
+    list: {
+      border: '1px solid #cecece'
     }
   }));
   const classes = useStyles();
   const [data, setData] = useState({});
-  const [value, setValue] = useState(0);
-  const [regexValue, setRegexValue] = useState("");
+  const [value, setValue] = useState('');
+  const [regexValue, setRegexValue] = React.useState('test2');
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  async function fetchData(regex) {
-    const res = await fetch(enviroments.apiUrl + "rabbitmq/regexQueues/" + regex);
+  async function fetchData(regex: string) {
+    if (regex === '') {
+      return;
+    }
+    const res = await fetch(
+      enviroments.apiUrl + 'rabbitmq/regexQueues/' + regex
+    );
+
     let data = await res.json();
-    data.items = data.items.sort((a: { messages: number; }, b: { messages: number; }) => (a.messages > b.messages) ? -1 : 1);
-    setData(data)
+    data.items = data.items.sort(
+      (a: { messages: number }, b: { messages: number }) =>
+        a.messages > b.messages ? -1 : 1
+    );
+    setData(data);
   }
 
   useEffect(() => {
-    fetchData(regexValue)
-  }, [])
+    fetchRegexlist();
+    fetchData('');
+
+    let refreshInterval = window.localStorage.getItem('refreshInterval');
+    if (refreshInterval && parseInt(refreshInterval) > 0) {
+      const interval = setInterval(() => {
+        fetchData(regexValue);
+      }, refreshInterval);
+      return () => clearInterval(interval);
+    }
+  }, [regexValue]);
 
   function Item(data: any) {
-    return (<TableItem queue={data.queue} />);
+    return <TableItem queue={data.queue} />;
   }
 
   const AntTabs = withStyles({
     root: {
-      borderBottom: '1px solid #e8e8e8',
+      borderBottom: '1px solid #e8e8e8'
     },
     indicator: {
-      backgroundColor: 'white',
-    },
+      backgroundColor: 'white'
+    }
   })(Tabs);
 
   const AntTab = withStyles(theme => ({
@@ -128,48 +178,45 @@ export default function BusinessQueues() {
         'sans-serif',
         '"Apple Color Emoji"',
         '"Segoe UI Emoji"',
-        '"Segoe UI Symbol"',
+        '"Segoe UI Symbol"'
       ].join(','),
       '&:hover': {
         color: 'white',
-        opacity: 1,
+        opacity: 1
       },
       '&$selected': {
         color: 'yellow',
-        fontWeight: theme.typography.fontWeightMedium,
+        fontWeight: theme.typography.fontWeightMedium
       },
       '&:focus': {
-        color: 'white',
-      },
+        color: 'white'
+      }
     },
-    selected: {},
+    selected: {}
   }))(props => <Tab disableRipple {...props} />);
 
   const [regexList, setRegexList] = React.useState([]);
-
-  useEffect(() => {
-    fetchRegexlist()
-  }, [])
 
   const fetchRegexlist = () => {
     let regList = window.localStorage.getItem('regexList');
     if (regList) {
       setRegexList(JSON.parse(regList));
     }
-  }
+  };
 
-  const setRegex = (event) => {
+  const setRegex = event => {
+    setRegexValue(event.target.value);
     fetchData(event.target.value);
-  }
+  };
 
-  const deleteRegex = (name) => {
+  const deleteRegex = name => {
     let t = JSON.parse(window.localStorage.getItem('regexList'));
     var s = t.find(item => item.regexName == name);
     t.splice(t.indexOf(s));
 
     window.localStorage.setItem('regexList', JSON.stringify(t));
     setRegexList(t);
-  }
+  };
 
   return (
     <Container fixed>
@@ -177,28 +224,36 @@ export default function BusinessQueues() {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <div className={styles.backButton} data-tid="backButton">
-              <Link to={routes.Queues}>
+              <Link to={routes.HOME}>
                 <i className="fa fa-arrow-left fa-3x" />
               </Link>
             </div>
           </Grid>
-          <Grid item xs={12}>
-
-          </Grid>
+          <Grid item xs={12}></Grid>
           <Grid item md={12}>
-
-            <AntTabs value={value} onChange={handleChange} aria-label="simple tabs example">
+            <AntTabs
+              value={value}
+              onChange={handleChange}
+              aria-label="simple tabs example"
+            >
               <AntTab label="Regex Queues" {...a11yProps(0)} />
               <AntTab label="Regex List" {...a11yProps(1)} />
             </AntTabs>
             <TabPanel value={value} index={0}>
               <FormControl variant="filled" className={classes.formControl}>
-                <InputLabel id="demo-simple-select-filled-label" className={classes.regexLabel}>My Regex</InputLabel>
+                <InputLabel
+                  id="demo-simple-select-filled-label"
+                  className={classes.regexLabel}
+                >
+                  My Regex
+                </InputLabel>
                 <Select
                   labelId="demo-simple-select-filled-label"
                   id="demo-simple-select-filled"
                   onChange={setRegex}
-                  className={classes.regexSelect}>
+                  value={regexValue}
+                  className={classes.regexSelect}
+                >
                   {regexList.map((regex, index) => (
                     <MenuItem value={regex.regex}>{regex.regexName}</MenuItem>
                   ))}
@@ -210,30 +265,35 @@ export default function BusinessQueues() {
                     <TableHeader response={data.items} />
                   </TableHead>
                   <TableBody>
-                    {data.items && data.items.map(queue => (
-                      <Item queue={queue} />
-                    ))}
+                    {data.items &&
+                      data.items.map(queue => <Item queue={queue} />)}
                   </TableBody>
                 </Table>
               </TableContainer>
             </TabPanel>
             <TabPanel value={value} index={1}>
-
               <Card className={classes.root}>
-                <CardContent>
+                <CardContent className={classes.muicardcontent}>
                   <SimpleModal />
                   <Grid item md={12} xs={6} sm={3}>
-                    <List component="nav" aria-label="main mailbox folders">
+                    <List
+                      component="nav"
+                      aria-label="main mailbox folders"
+                      className={classes.list}
+                    >
                       {regexList.map((regex, index) => (
                         <ListItem button>
-                          > {regex.regexName} <IconButton aria-label="delete" onClick={() => deleteRegex(regex.regexName)} >
+                          > {regex.regexName}{' '}
+                          <IconButton
+                            aria-label="delete"
+                            onClick={() => deleteRegex(regex.regexName)}
+                          >
                             <DeleteIcon fontSize="medium" color="secondary" />
                           </IconButton>
                         </ListItem>
                       ))}
                     </List>
                   </Grid>
-
                 </CardContent>
               </Card>
             </TabPanel>

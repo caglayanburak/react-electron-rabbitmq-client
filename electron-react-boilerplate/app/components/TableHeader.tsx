@@ -36,6 +36,5 @@ export default function TableHeader(props: { response: string | any[]; }) {
             <StyledTableCell align="right">Requeue</StyledTableCell>
             <StyledTableCell align="right">Purge</StyledTableCell>
         </StyledTableRow>
-
     );
 }

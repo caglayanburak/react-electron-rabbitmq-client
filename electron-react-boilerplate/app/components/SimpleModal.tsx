@@ -35,6 +35,13 @@ const useStyles = makeStyles(theme => ({
         boxShadow: theme.shadows[5],
         padding: theme.spacing(2, 4, 3),
     },
+    newbutton:{
+        color:'#3288f7',
+        borderColor:'#3288f7'
+      },
+      buttonContainer:{
+          margin:10
+      }
 }));
 
 export default function SimpleModal() {
@@ -65,8 +72,8 @@ export default function SimpleModal() {
     }
 
     return (
-        <div>
-            <Button type="button" onClick={handleOpen} variant="outlined" color="primary">
+        <div className={classes.buttonContainer}>
+            <Button type="button" onClick={handleOpen} variant="outlined" color="primary" className={classes.newbutton}>
                 New
       </Button>
             <Modal

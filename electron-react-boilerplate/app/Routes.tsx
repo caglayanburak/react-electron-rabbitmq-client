@@ -8,11 +8,13 @@ import Home from './components/Home';
 import Footer from './components/Footer';
 import TableItem from './components/TableItem';
 import TableHeader from './components/TableHeader';
+import PublishQueue from './components/PublishQueue';
 import ButtonAppBar from './components/AppBar';
 import {
   Grid,
   makeStyles
 } from '@material-ui/core';
+import PublishQueuePage from './containers/PublishQueuePage';
 
 export default function Routes() {
   const useStyles = makeStyles(theme => ({
@@ -55,8 +57,8 @@ export default function Routes() {
               <Route path={routes.Business}>
                 <BusinessQueues />
               </Route>
-              <Route path={routes.Footer}>
-                <Footer />
+              <Route exact path={routes.Publish}>
+                <PublishQueuePage />
               </Route>
               <Route path={routes.TableItem}>
                 <TableItem />
@@ -64,6 +66,7 @@ export default function Routes() {
               <Route path={routes.TableHeader}>
                 <TableHeader />
               </Route>
+             
             </Switch>
           </Grid>
         </Grid>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Button from '@material-ui/core/Button';
@@ -7,6 +7,7 @@ import Divider from '@material-ui/core/Divider';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuIcon from '@material-ui/icons/Menu';
+import enviroments from '../constants/enviroments.json';
 import {
   IconButton,
   FormControl,
@@ -20,7 +21,7 @@ import ViewComfyIcon from '@material-ui/icons/ViewComfy';
 
 const useStyles = makeStyles(theme => ({
   underline: {
-    "&:hover:not(.Mui-disabled):not(.Mui-focused):not(.Mui-error):before": {
+    '&:hover:not(.Mui-disabled):not(.Mui-focused):not(.Mui-error):before': {
       // hover
       borderBottom: `2px solid yellow`
     }
@@ -45,7 +46,7 @@ const useStyles = makeStyles(theme => ({
   },
   menulogoSpan: {
     color: 'white',
-    marginBottom: 10,
+    marginBottom: 10
   },
   leftMenu: {
     width: '100%'
@@ -61,36 +62,38 @@ const useStyles = makeStyles(theme => ({
     padding: '5px'
   },
   formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
+    margin: theme.spacing(-1),
+    minWidth: 80,
     color: 'white'
   },
   select: {
     color: 'white',
-    border:'1px solid #cecece',
-    width:200,
+    fontSize: 10,
+    border: '1px solid #cecece',
+    width: 235,
+    height: 50,
     '& .MuiSelect-icon': {
       color: 'yellow',
-    }, '&::after':{
-        border:'1px solid yellow'
-      
+      height: 20
+    },
+    '&::after': {
+      border: '1px solid yellow',
+      color: 'yellow'
     }
   },
   menuButton: {
     marginRight: theme.spacing(2)
   },
   inputlabel: {
-    color:'#3288f7'
+    color: '#3288f7',
+    fontSize: 10
   }
 }));
 
 export default function TemporaryDrawer() {
   const classes = useStyles();
   const [state, setState] = React.useState({
-    top: false,
-    left: false,
-    bottom: false,
-    right: false
+    left: false
   });
 
   const toggleDrawer = (anchor, open) => event => {
@@ -100,9 +103,45 @@ export default function TemporaryDrawer() {
     ) {
       return;
     }
-
     setState({ ...state, [anchor]: open });
   };
+
+  const [enviroment, setEnv] = useState();
+  const setEnviroment = (event: { target: { value: string } }) => {
+    window.localStorage.setItem('enviroment', event.target.value);
+    window.location.reload();
+  };
+
+  const [refreshInterval, setRefresh] = useState();
+  const setRefreshInterval = (event: { target: { value: string } }) => {
+    window.localStorage.setItem('refreshInterval', event.target.value);
+    window.location.reload();
+  };
+
+  const setHostData = (event: { target: { value: string } }) => {
+    window.localStorage.setItem('host', event.target.value);
+    window.location.reload();
+  };
+
+  const [host, setHost] = useState();
+  const [vhosts, setVhosts] = useState([]);
+  async function fetchVhostsData() {
+    const res = await fetch(enviroments.apiUrl + 'rabbitmq/vhosts');
+    let data = await res.json();
+
+    setVhosts(data);
+  }
+
+  const closeMenu = () => {
+    setState('left', false);
+  };
+
+  useEffect(() => {
+    fetchVhostsData();
+    setEnv(window.localStorage.getItem('enviroment'));
+    setRefresh(window.localStorage.getItem('refreshInterval'));
+    setHost(window.localStorage.getItem('host'));
+  }, []);
 
   const list = anchor => (
     <div className={classes.list} role="presentation">
@@ -116,43 +155,97 @@ export default function TemporaryDrawer() {
       <List>
         <ListItem>
           <FormControl variant="filled" className={classes.formControl}>
-                <InputLabel id="demo-simple-select-filled-label" className={classes.inputlabel}>Enviroment</InputLabel>
-                <Select
-                className={classes.select}
-                    labelId="demo-simple-select-filled-label"
-                    id="demo-simple-select-filled">
-                    <MenuItem value={10}>Dev</MenuItem>
-                    <MenuItem value={20}>Stage</MenuItem>
-                    <MenuItem value={30}>Prod</MenuItem>
-                </Select>
-            </FormControl>
+            <InputLabel
+              id="demo-simple-select-filled-label"
+              className={classes.inputlabel}
+            >
+              Enviroment
+            </InputLabel>
+            <Select
+              className={classes.select}
+              value={enviroment}
+              onChange={setEnviroment}
+              labelId="demo-simple-select-filled-label"
+              id="demo-simple-select-filled"
+            >
+              <MenuItem value="htpp://localhost:3000/">Dev</MenuItem>
+              <MenuItem value="Stage">Stage</MenuItem>
+              <MenuItem value="Prod">Prod</MenuItem>
+            </Select>
+          </FormControl>
         </ListItem>
         <ListItem>
           <FormControl variant="filled" className={classes.formControl}>
-                <InputLabel id="demo-simple-select-filled-label" className={classes.inputlabel}>Refresh</InputLabel>
-                <Select
-                     className={classes.select}
-                    labelId="demo-simple-select-filled-label"
-                    id="demo-simple-select-filled"
-                >
-                    <MenuItem value={10}>5 seconds</MenuItem>
-                    <MenuItem value={20}>30 seconds</MenuItem>
-                    <MenuItem value={30}>5 minutes</MenuItem>
-                    <MenuItem value={30}>none</MenuItem>
-                </Select>
-            </FormControl>
+            <InputLabel
+              id="demo-simple-select-filled-label"
+              className={classes.inputlabel}
+            >
+              Refresh
+            </InputLabel>
+            <Select
+              className={classes.select}
+              value={refreshInterval}
+              onChange={setRefreshInterval}
+              labelId="demo-simple-select-filled-label"
+              id="demo-simple-select-filled"
+            >
+              <MenuItem value={5000}>5 seconds</MenuItem>
+              <MenuItem value={30000}>30 seconds</MenuItem>
+              <MenuItem value={300000}>5 minutes</MenuItem>
+              <MenuItem value={0}>none</MenuItem>
+            </Select>
+          </FormControl>
+        </ListItem>
+        <ListItem>
+          <FormControl variant="filled" className={classes.formControl}>
+            <InputLabel
+              id="demo-simple-select-filled-label"
+              className={classes.inputlabel}
+            >
+              Host
+            </InputLabel>
+            <Select
+              className={classes.select}
+              onChange={setHostData}
+              value={host}
+              labelId="demo-simple-select-filled-label"
+              id="demo-simple-select-filled"
+            >
+              {vhosts &&
+                vhosts.map(item => (
+                  <MenuItem value={item.name}>{item.name}</MenuItem>
+                ))}
+
+              <MenuItem value="All">All</MenuItem>
+            </Select>
+          </FormControl>
         </ListItem>
         <ListItem>
           <ViewComfyIcon className={classes.workload} />
           <ListItemText primary=" Workloads" className={classes.listItemText} />
         </ListItem>
         <ListItem>
-          <Link to={routes.Error} className={classes.listItemText}>
+          <Link to={routes.Error}  onClick={closeMenu} className={classes.listItemText}>
             Error Queues
           </Link>
         </ListItem>
         <ListItem>
-          <Link to={routes.Business} className={classes.listItemText}>Business Queue</Link>
+          <Link
+            to={routes.Business}
+            onClick={closeMenu}
+            className={classes.listItemText}
+          >
+            Business Queues
+          </Link>
+        </ListItem>
+        <ListItem>
+          <Link
+            to="/publish"
+            onClick={closeMenu}
+            className={classes.listItemText}
+          >
+            Publish Messages
+          </Link>
         </ListItem>
       </List>
     </div>
@@ -162,7 +255,7 @@ export default function TemporaryDrawer() {
     <div className={classes.leftMenu}>
       {['left'].map(anchor => (
         <React.Fragment key={anchor}>
-          <Button onClick={toggleDrawer(anchor, true)}>{anchor}</Button>
+          <Button onClick={toggleDrawer(anchor, true)}></Button>
 
           <IconButton
             edge="start"
