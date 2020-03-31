@@ -43,6 +43,22 @@ const useStyles = makeStyles(theme => ({
       color: '#cecece'
     }
   },
+  textField2: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: '70%',
+    color: '#cecece',
+
+    '& .MuiFormLabel-root': {
+      color: 'white'
+    },
+    '& .MuiInputBase-root': {
+      color: '#cecece'
+    },
+    '& .MuiFormHelperText-root': {
+      color: '#cecece'
+    }
+  },
   button: {
     color: '#72fd6f',
     borderColor: '#72fd6f',
@@ -51,7 +67,8 @@ const useStyles = makeStyles(theme => ({
   publishButton: {
     color: '#f60',
     borderColor: '#f60',
-    float: 'right'
+    float: 'right',
+    marginTop: '20px'
   },
   switch: {
     float: 'right',
@@ -77,26 +94,56 @@ export default function PublishQueue() {
   let { queue } = useParams();
   const [data, setData] = useState([]);
   const [groupedData, setGroupedData] = useState([]);
-  const [queueName, setQueueName] = useState(queue);
-  if (queue) {
-    fetchData();
-  }
+  const [payloads, setAllPayloads] = useState([]);
+  const [fromQueueName, setFromQueueName] = useState(queue);
+  const [toQueueName, setToQueueName] = useState(queue);
 
   async function fetchData() {
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/queueMessages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ queueName: queueName })
+      body: JSON.stringify({ queueName: fromQueueName })
     });
     let data = await res.json();
     setData(data);
   }
 
+  useEffect(() => {
+    if (queue) {
+      fetchData();
+    }
+  }, []);
+
   const handleClick = () => {
     fetchData();
   };
 
-  const publish = () => {};
+  const test = (event, item) => {
+    let id = item.properties.message_id;
+    var c = payloads.filter(x => x.properties.message_id == id);
+    if (event.target.checked && c[0] == undefined) {
+      let s = payloads;
+      s.push(item);
+      setAllPayloads(s);
+    } else {
+      var indexOf = payloads.indexOf(item);
+      let s = payloads;
+      s.splice(indexOf, 1);
+      setAllPayloads(s);
+    }
+
+    alert(payloads.length);
+  };
+
+  async function publish() {
+    const res = await fetch(enviroments.apiUrl + 'rabbitmq/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ allPayloads: payloads, queueName: toQueueName })
+    });
+
+    let data = await res.json();
+  }
   const groupMessages = event => {
     if (!event.target.checked) {
       setGroupedData([]);
@@ -161,7 +208,11 @@ export default function PublishQueue() {
                 return (
                   <ListItem key={item} role="listitem" button>
                     <ListItemIcon>
-                      <Checkbox tabIndex={-1} disableRipple />
+                      <Checkbox
+                        tabIndex={-1}
+                        onChange={e => test(e, item)}
+                        disableRipple
+                      />
                     </ListItemIcon>
                     <ListItemText
                       primary={`${item.properties.headers['MT-Fault-Message']}`}
@@ -183,14 +234,14 @@ export default function PublishQueue() {
           <Grid item md={12}>
             <TextField
               id="standard-full-width"
-              label="Queue Name:"
-              value={queueName}
+              label="From Queue Name:"
+              value={fromQueueName}
               className={classes.textField}
               style={{ margin: 8 }}
-              placeholder="Queue Name"
+              placeholder="From Queue Name"
               fullWidth
               margin="normal"
-              onChange={e => setQueueName(e.target.value)}
+              onChange={e => setFromQueueName(e.target.value)}
               InputLabelProps={{
                 shrink: true
               }}
@@ -237,6 +288,20 @@ export default function PublishQueue() {
             <DataItem />
           </Grid>
           <Grid item md={12}>
+            <TextField
+              id="standard-full-width"
+              label="To Queue Name:"
+              value={toQueueName}
+              className={classes.textField2}
+              style={{ margin: 8 }}
+              placeholder="To Queue Name"
+              fullWidth
+              margin="normal"
+              onChange={e => setToQueueName(e.target.value)}
+              InputLabelProps={{
+                shrink: true
+              }}
+            />
             <Button
               variant="outlined"
               className={classes.publishButton}
