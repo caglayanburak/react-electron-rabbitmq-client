@@ -20,6 +20,7 @@ import {
   Chip,
   Avatar
 } from '@material-ui/core';
+import { useParams } from 'react-router';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -73,9 +74,13 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function PublishQueue() {
+  let { queue } = useParams();
   const [data, setData] = useState([]);
   const [groupedData, setGroupedData] = useState([]);
-  const [queueName, setQueueName] = useState('');
+  const [queueName, setQueueName] = useState(queue);
+  if (queue) {
+    fetchData();
+  }
 
   async function fetchData() {
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/queueMessages', {

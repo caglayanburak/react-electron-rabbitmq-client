@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, TableRow, withStyles, TableCell, Icon, makeStyles } from '@material-ui/core';
+import { Link } from 'react-router-dom';
 
 export default function TableItem(props) {
     const useStyles = makeStyles(theme => ({
@@ -50,6 +51,11 @@ export default function TableItem(props) {
             </StyledTableCell>
             <StyledTableCell align="right">
                 {props.queue.messages}
+            </StyledTableCell>
+            <StyledTableCell align="right">
+                <Link className={classes.requeueButton} color="primary" to={'publish/'+props.queue.name}>
+                        <Icon className="fa fa-recycle" />
+                    </Link>
             </StyledTableCell>
             <StyledTableCell align="right">
                 <Button variant="outlined" className={classes.requeueButton} color="primary" onClick={() => requeue(props.queue.name)}>

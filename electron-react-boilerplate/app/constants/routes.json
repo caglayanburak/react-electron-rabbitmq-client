@@ -6,5 +6,5 @@
     "Footer": "/footer",
     "TableItem": "/tableitem",
     "TableFooter": "/tablefooter",
-    "Publish": "/publish"
+    "Publish": "/publish/:queue?"
 }

@@ -57,7 +57,7 @@ export default function Routes() {
               <Route path={routes.Business}>
                 <BusinessQueues />
               </Route>
-              <Route exact path={routes.Publish}>
+              <Route sensitive path={routes.Publish}>
                 <PublishQueuePage />
               </Route>
               <Route path={routes.TableItem}>

@@ -33,6 +33,7 @@ export default function TableHeader(props: { response: string | any[]; }) {
             <StyledTableCell align="right">
                 <Badge badgeContent={props.response?.length} color="error">
                     Error Messages</Badge></StyledTableCell>
+                    <StyledTableCell align="right">Messages</StyledTableCell>
             <StyledTableCell align="right">Requeue</StyledTableCell>
             <StyledTableCell align="right">Purge</StyledTableCell>
         </StyledTableRow>
