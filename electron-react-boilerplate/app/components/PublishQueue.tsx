@@ -59,6 +59,22 @@ const useStyles = makeStyles(theme => ({
       color: '#cecece'
     }
   },
+  textField3: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: '10%',
+    color: '#cecece',
+
+    '& .MuiFormLabel-root': {
+      color: 'white'
+    },
+    '& .MuiInputBase-root': {
+      color: '#cecece'
+    },
+    '& .MuiFormHelperText-root': {
+      color: '#cecece'
+    }
+  },
   button: {
     color: '#72fd6f',
     borderColor: '#72fd6f',
@@ -118,28 +134,32 @@ export default function PublishQueue() {
     fetchData();
   };
 
-  const test = (event, item) => {
+  const test = (event: any, item: any) => {
     let id = item.properties.message_id;
-    var c = payloads.filter(x => x.properties.message_id == id);
+    var c = payloads.filter(x => x.message_id == id);
     if (event.target.checked && c[0] == undefined) {
       let s = payloads;
-      s.push(item);
+      if (JSON.parse(item.payload).headers['MT-Redelivery-Count']) {
+        let itemPayload = JSON.parse(item.payload);
+        itemPayload.headers['MT-Redelivery-Count'] = 6;
+        item.payload = JSON.stringify(itemPayload);
+      }
+      
+      s.push(item.payload);
       setAllPayloads(s);
     } else {
-      var indexOf = payloads.indexOf(item);
+      var indexOf = payloads.indexOf(item.payload);
       let s = payloads;
       s.splice(indexOf, 1);
       setAllPayloads(s);
     }
-
-    alert(payloads.length);
   };
 
   async function publish() {
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/publish', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ allPayloads: payloads, queueName: toQueueName })
+      body: JSON.stringify({ allPayloads: payloads, toQueueName: toQueueName })
     });
 
     let data = await res.json();
@@ -281,8 +301,33 @@ export default function PublishQueue() {
                     inputProps={{ 'aria-label': 'primary checkbox' }}
                   />
                 }
+                label="MT-Redelivery-Count Enable"
+              />
+              <FormControlLabel
+                className={classes.switch}
+                onChange={groupMessages}
+                control={
+                  <Switch
+                    className={classes.switch}
+                    inputProps={{ 'aria-label': 'primary checkbox' }}
+                  />
+                }
                 label="Group all messages"
               />
+              <TextField
+              id="standard-full-width"
+              label="To Queue Name:"
+              value={toQueueName}
+              className={classes.textField3}
+              style={{ margin: 8 }}
+              placeholder="To Queue Name"
+              fullWidth
+              margin="normal"
+              onChange={e => setToQueueName(e.target.value)}
+              InputLabelProps={{
+                shrink: true
+              }}
+            />
             </h3>
 
             <DataItem />
@@ -302,6 +347,7 @@ export default function PublishQueue() {
                 shrink: true
               }}
             />
+         
             <Button
               variant="outlined"
               className={classes.publishButton}
