@@ -16,11 +16,10 @@ import {
   Button,
   Badge,
   Switch,
-  FormControlLabel,
-  Chip,
-  Avatar
+  FormControlLabel
 } from '@material-ui/core';
 import { useParams } from 'react-router';
+import CustomSnackbar from './CustomSnackbar';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -62,7 +61,6 @@ const useStyles = makeStyles(theme => ({
   textField3: {
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
-    width: '10%',
     color: '#cecece',
 
     '& .MuiFormLabel-root': {
@@ -86,11 +84,19 @@ const useStyles = makeStyles(theme => ({
     float: 'right',
     marginTop: '20px'
   },
+  marginLeft: {
+    float: 'left'
+  },
   switch: {
     float: 'right',
+    marginTop: '10px',
     '& .MuiSwitch-track': {
       backgroundColor: 'white'
     }
+  },
+  selectAll: {
+    marginLeft: '20px',
+    color: '#1976d2'
   },
   paper: {
     width: '100%',
@@ -113,6 +119,8 @@ export default function PublishQueue() {
   const [payloads, setAllPayloads] = useState([]);
   const [fromQueueName, setFromQueueName] = useState(queue);
   const [toQueueName, setToQueueName] = useState(queue);
+  const [mtredeliverycount, setMtredeliverycount] = useState(0);
+  const [allTrue, setAllTrue] = React.useState(false);
 
   async function fetchData() {
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/queueMessages', {
@@ -121,7 +129,12 @@ export default function PublishQueue() {
       body: JSON.stringify({ queueName: fromQueueName })
     });
     let data = await res.json();
-    setData(data);
+    var items = new Array<any>();
+    data.forEach(element => {
+      element.isChecked = false;
+      items.push(element);
+    });
+    setData(items);
   }
 
   useEffect(() => {
@@ -134,28 +147,62 @@ export default function PublishQueue() {
     fetchData();
   };
 
-  const test = (event: any, item: any) => {
+  const selectAll = (event: any) => {
+    var checked = event.target.checked;
+
+    setAllTrue(checked);
+    if (checked) {
+      data.forEach(item => {
+        let s = payloads;
+        item.isChecked = checked;
+        s.push(item.payload);
+        setAllPayloads(s);
+      });
+    } else {
+      data.forEach(item => {
+        let s = payloads;
+        item.isChecked = checked;
+        setAllPayloads(s);
+      });
+      setAllPayloads([]);
+    }
+  };
+
+  const selectGridItem = (event: any, item: any) => {
     let id = item.properties.message_id;
     var c = payloads.filter(x => x.message_id == id);
     if (event.target.checked && c[0] == undefined) {
-      let s = payloads;
-      if (JSON.parse(item.payload).headers['MT-Redelivery-Count']) {
-        let itemPayload = JSON.parse(item.payload);
-        itemPayload.headers['MT-Redelivery-Count'] = 6;
-        item.payload = JSON.stringify(itemPayload);
-      }
-      
-      s.push(item.payload);
-      setAllPayloads(s);
+      item.isChecked = true;
+      setData(r => [...data]);
+      setAllPayloads([...payloads, JSON.parse(item.payload)]);
+      // s.push(item.payload);
+      // setAllPayloads(s);
     } else {
       var indexOf = payloads.indexOf(item.payload);
       let s = payloads;
       s.splice(indexOf, 1);
+      item.isChecked = false;
+      setData(r => [...data]);
       setAllPayloads(s);
     }
   };
 
   async function publish() {
+    let index = 0;
+    let newArr = [...payloads];
+
+    newArr.forEach(payload => {
+      if (payload.headers['MT-Redelivery-Count']) {
+        let itemPayload = payload;
+
+        itemPayload.headers['MT-Redelivery-Count'] = mtredeliverycount;
+        payload = itemPayload;
+        payloads[index] = payload;
+        setAllPayloads([...payloads]);
+      }
+      index++;
+    });
+
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/publish', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -163,7 +210,7 @@ export default function PublishQueue() {
     });
 
     let data = await res.json();
-  }
+  };
   const groupMessages = event => {
     if (!event.target.checked) {
       setGroupedData([]);
@@ -204,7 +251,7 @@ export default function PublishQueue() {
             {groupedData &&
               groupedData.map(item => {
                 return (
-                  <ListItem key={item} role="listitem" button>
+                  <ListItem key={item.name} role="listitem" button>
                     <ListItemIcon>
                       <Checkbox tabIndex={-1} disableRipple />
                     </ListItemIcon>
@@ -221,28 +268,47 @@ export default function PublishQueue() {
       );
     } else {
       return (
-        <Paper className={classes.paper}>
-          <List dense component="div" role="list">
-            {data &&
-              data.map(item => {
-                return (
-                  <ListItem key={item} role="listitem" button>
-                    <ListItemIcon>
-                      <Checkbox
-                        tabIndex={-1}
-                        onChange={e => test(e, item)}
-                        disableRipple
-                      />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`${item.properties.headers['MT-Fault-Message']}`}
-                    />
-                  </ListItem>
-                );
-              })}
-            <ListItem />
-          </List>
-        </Paper>
+        <Grid container>
+          <Paper className={classes.paper}>
+            <Grid item md={12}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    className={classes.selectAll}
+                    checked={allTrue}
+                    onChange={event => selectAll(event)}
+                    inputProps={{ 'aria-label': 'primary checkbox' }}
+                  />
+                }
+                label="Select All"
+              />
+            </Grid>
+            <Grid item md={12}>
+              <List dense component="div" role="list">
+                {data &&
+                  data.map(item => {
+                    if (item.properties.headers['MT-Fault-Message'])
+                      return (
+                        <ListItem key={item.properties.message_id} role="listitem" button>
+                          <ListItemIcon>
+                            <Checkbox
+                              tabIndex={-1}
+                              checked={item.isChecked}
+                              onChange={e => selectGridItem(e, item)}
+                              disableRipple
+                            />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`${item.properties.headers['MT-Fault-Message']} - ${item.properties.message_id}`}
+                          />
+                        </ListItem>
+                      );
+                  })}
+                <ListItem />
+              </List>
+            </Grid>
+          </Paper>
+        </Grid>
       );
     }
   };
@@ -277,32 +343,26 @@ export default function PublishQueue() {
               </Button>
             </Grid>
           </Grid>
-          <Grid item md={12}>
-            <h3>
-              Messages{' '}
-              <Badge
-                color="secondary"
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right'
-                }}
-                badgeContent={data.length}
-                max={99999}
-                showZero
-              >
-                <MailIcon />
-              </Badge>
-              <FormControlLabel
-                className={classes.switch}
-                onChange={groupMessages}
-                control={
-                  <Switch
-                    className={classes.switch}
-                    inputProps={{ 'aria-label': 'primary checkbox' }}
-                  />
-                }
-                label="MT-Redelivery-Count Enable"
-              />
+          <Grid container md={12} spacing={3}>
+            <Grid item md={8}>
+              <h3>
+                Messages{' '}
+                <Badge
+                  color="secondary"
+                  anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right'
+                  }}
+                  badgeContent={data.length}
+                  max={99999}
+                  showZero
+                >
+                  <MailIcon />
+                </Badge>
+              </h3>
+            </Grid>
+
+            <Grid item md={4}>
               <FormControlLabel
                 className={classes.switch}
                 onChange={groupMessages}
@@ -314,50 +374,55 @@ export default function PublishQueue() {
                 }
                 label="Group all messages"
               />
-              <TextField
-              id="standard-full-width"
-              label="To Queue Name:"
-              value={toQueueName}
-              className={classes.textField3}
-              style={{ margin: 8 }}
-              placeholder="To Queue Name"
-              fullWidth
-              margin="normal"
-              onChange={e => setToQueueName(e.target.value)}
-              InputLabelProps={{
-                shrink: true
-              }}
-            />
-            </h3>
-
-            <DataItem />
+            </Grid>
           </Grid>
           <Grid item md={12}>
-            <TextField
-              id="standard-full-width"
-              label="To Queue Name:"
-              value={toQueueName}
-              className={classes.textField2}
-              style={{ margin: 8 }}
-              placeholder="To Queue Name"
-              fullWidth
-              margin="normal"
-              onChange={e => setToQueueName(e.target.value)}
-              InputLabelProps={{
-                shrink: true
-              }}
-            />
-         
-            <Button
-              variant="outlined"
-              className={classes.publishButton}
-              onClick={publish}
-            >
-              Publish
-            </Button>
+            <DataItem />
+          </Grid>
+
+          <Grid container md={12}>
+            <Grid item md={8}>
+              <TextField
+                id="standard-full-width"
+                label="To Queue Name:"
+                value={toQueueName}
+                className={classes.textField2}
+                style={{ margin: 8 }}
+                placeholder="To Queue Name"
+                fullWidth
+                margin="normal"
+                onChange={e => setToQueueName(e.target.value)}
+                InputLabelProps={{
+                  shrink: true
+                }}
+              />
+            </Grid>
+
+            <Grid item md={3}>
+              <TextField
+                id="standard-basic"
+                style={{ margin: 8 }}
+                placeholder="MT-Redelivery-Count"
+                label="MT-Redelivery-Count"
+                onChange={e => setMtredeliverycount(e.target.value)}
+                className={classes.textField3}
+              />
+            </Grid>
+
+            <Grid item md={1}>
+              <Button
+                variant="outlined"
+                className={classes.publishButton}
+                onClick={publish}
+              >
+                Publish
+              </Button>
+            </Grid>
           </Grid>
         </Grid>
       </div>
+      <CustomSnackbar />
     </Container>
   );
 }
+
