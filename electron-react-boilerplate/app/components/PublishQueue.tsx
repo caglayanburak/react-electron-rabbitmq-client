@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import enviroments from '../constants/enviroments.json';
@@ -121,6 +121,9 @@ export default function PublishQueue() {
   const [toQueueName, setToQueueName] = useState(queue);
   const [mtredeliverycount, setMtredeliverycount] = useState(0);
   const [allTrue, setAllTrue] = React.useState(false);
+  const [mesageBoxState, setMesageBoxState] = React.useState(false);
+
+  const ref = useRef(null);
 
   async function fetchData() {
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/queueMessages', {
@@ -202,7 +205,7 @@ export default function PublishQueue() {
       }
       index++;
     });
-
+    
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/publish', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -210,6 +213,8 @@ export default function PublishQueue() {
     });
 
     let data = await res.json();
+
+    ref.current.handleClick("Publish successful");
   };
   const groupMessages = event => {
     if (!event.target.checked) {
@@ -421,7 +426,7 @@ export default function PublishQueue() {
           </Grid>
         </Grid>
       </div>
-      <CustomSnackbar />
+      <CustomSnackbar ref={ref} />
     </Container>
   );
 }
