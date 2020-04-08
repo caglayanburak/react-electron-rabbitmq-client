@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './Home.css';
+import enviroments from '../constants/enviroments.json';
 import {
   Grid,
   Paper,
@@ -88,7 +89,34 @@ export default function Home() {
     }
   })(Slider);
   const classes = useStyles();
-  
+
+  const [overview, setOverview] = useState([]);
+  const [nodes, setNodes] = useState([]);
+
+  async function fetchData() {
+    const res = await fetch(enviroments.apiUrl + 'rabbitmq/overview', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    let data = await res.json();
+    setOverview(data.object_totals);
+  }
+
+  async function fetchData2() {
+    const res = await fetch(enviroments.apiUrl + 'rabbitmq/nodes', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    let data = await res.json();
+    setNodes(data[0]);
+  }
+
+  useEffect(() => {
+    fetchData();
+    fetchData2();
+
+  }, []);
+
   return (
     <div>
       <Grid container spacing={3}>
@@ -200,10 +228,11 @@ export default function Home() {
                   <PrettoSlider
                     valueLabelDisplay="auto"
                     aria-label="pretto slider"
-                    defaultValue={20}
+                    max={nodes.sockets_total}
+                    defaultValue={nodes.sockets_used}
                   />
                   <br />
-                  572 / 1024
+                  {nodes.sockets_used + '/' + nodes.sockets_total}
                 </Typography>
               </CardContent>
             </Card>
@@ -276,35 +305,35 @@ export default function Home() {
                     className={classes.chip}
                     variant="outlined"
                     size="small"
-                    label="Connections: 20"
+                    label={'Connections:' + overview.connections}
                     color="secondary"
                   />
                   <Chip
-                  className={classes.chip}
+                    className={classes.chip}
                     variant="outlined"
                     size="small"
-                    label="Channels: 20"
+                    label={'Channels:' + overview.channels}
                     color="secondary"
                   />
                   <Chip
-                  className={classes.chip}
+                    className={classes.chip}
                     variant="outlined"
                     size="small"
-                    label="Exchanges: 20"
+                    label={'Exchanges:' + overview.exchanges}
                     color="secondary"
                   />
                   <Chip
-                  className={classes.chip}
+                    className={classes.chip}
                     variant="outlined"
                     size="small"
-                    label="Queues: 20"
+                    label={'Queues:' + overview.queues}
                     color="secondary"
                   />
                   <Chip
-                  className={classes.chip}
+                    className={classes.chip}
                     variant="outlined"
                     size="small"
-                    label="Consumers: 20"
+                    label={'Consumers:' + overview.consumers}
                     color="secondary"
                   />
                 </div>
