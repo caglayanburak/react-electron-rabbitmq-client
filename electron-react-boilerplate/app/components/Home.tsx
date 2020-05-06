@@ -92,6 +92,7 @@ export default function Home() {
 
   const [overview, setOverview] = useState([]);
   const [nodes, setNodes] = useState([]);
+  const [errorQueueCount, setErrorQueueCount] = useState(0);
 
   async function fetchData() {
     const res = await fetch(enviroments.apiUrl + 'rabbitmq/overview', {
@@ -111,9 +112,17 @@ export default function Home() {
     setNodes(data[0]);
   }
 
+  async function fetchData3() {
+    const res = await fetch(enviroments.apiUrl + "rabbitmq/queuesError");
+    let data = await res.json();
+    setErrorQueueCount(data.apiResponse.length);
+    
+  }
+
   useEffect(() => {
     fetchData();
     fetchData2();
+    fetchData3();
 
   }, []);
 
@@ -146,13 +155,10 @@ export default function Home() {
                 </Typography>
 
                 <Typography variant="body2" component="p">
-                  198
+                  {errorQueueCount}
                   <br />
                 </Typography>
               </CardContent>
-              <CardActions>
-                <Button size="small">Go Error Queues >></Button>
-              </CardActions>
             </Card>
           </Paper>
         </Grid>
@@ -169,13 +175,10 @@ export default function Home() {
                 </Typography>
 
                 <Typography variant="body2" component="p">
-                  256
+                  {overview.queues}
                   <br />
                 </Typography>
               </CardContent>
-              <CardActions>
-                <Button size="small">Go Error Queues >></Button>
-              </CardActions>
             </Card>
           </Paper>
         </Grid>
@@ -202,10 +205,12 @@ export default function Home() {
                   <PrettoSlider
                     valueLabelDisplay="auto"
                     aria-label="pretto slider"
-                    defaultValue={20}
+                    value={nodes.fd_used}
+                    max={nodes.fd_total}
+                    min={0}
                   />
                   <br />
-                  572 / 1024
+                  {nodes.fd_used} / {nodes.fd_total}
                 </Typography>
               </CardContent>
             </Card>
@@ -229,7 +234,7 @@ export default function Home() {
                     valueLabelDisplay="auto"
                     aria-label="pretto slider"
                     max={nodes.sockets_total}
-                    defaultValue={nodes.sockets_used}
+                    value={nodes.sockets_used}
                   />
                   <br />
                   {nodes.sockets_used + '/' + nodes.sockets_total}
@@ -255,10 +260,11 @@ export default function Home() {
                   <PrettoSlider
                     valueLabelDisplay="auto"
                     aria-label="pretto slider"
-                    defaultValue={20}
+                    value={parseInt(nodes.mem_used*0.00000095367432)}
+                    max={parseInt(nodes.mem_limit*0.00000095367432)}
                   />
                   <br />
-                  572 / 1024
+                  { parseInt(nodes.mem_used*0.00000095367432)} Mb/ { parseInt(nodes.mem_limit*0.0000000095367432)/10} Gb
                 </Typography>
               </CardContent>
             </Card>
@@ -281,10 +287,11 @@ export default function Home() {
                   <PrettoSlider
                     valueLabelDisplay="auto"
                     aria-label="pretto slider"
-                    defaultValue={20}
+                    max={parseInt(nodes.disk_free*0.00000000095367432)}
+                    value={0}
                   />
                   <br />
-                  572 / 1024
+                   {parseInt(nodes.disk_free*0.00000000095367432)} Gb
                 </Typography>
               </CardContent>
             </Card>

@@ -181,9 +181,6 @@ export default function ErrorQueues() {
               </Alert>
             </Snackbar>
           </Grid>
-          <Grid item md={6} xs={6} sm={3}>
-            <Footer />
-          </Grid>
         </Grid>
       </div>
       <Dialog
